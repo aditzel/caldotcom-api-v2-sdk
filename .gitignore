@@ -1,0 +1,21 @@
+# Dependencies and builds
+node_modules/
+dist/
+build/
+
+# Environment
+.env
+.env.*
+*.log
+
+# OS/editor
+.DS_Store
+coverage/
+.vscode/
+.idea/
+*.tsbuildinfo
+
+# Bun
+# Intentionally keep bun.lockb and .bun/ tracked (Bun best practice)
+# bun.lockb
+# .bun/
