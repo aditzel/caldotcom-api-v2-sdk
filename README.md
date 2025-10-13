@@ -492,6 +492,8 @@ bun run examples/simple-usage.ts
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+Review the [Repository Guidelines](./AGENTS.md) before opening a PR to follow project conventions.
+
 ## License
 
 MIT - Made with ❤️ by [Allan Ditzel](https://github.com/aditzel)
