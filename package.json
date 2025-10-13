@@ -1,6 +1,27 @@
 {
   "name": "@aditzel/caldotcom-api-v2-sdk",
   "version": "0.1.0",
+  "description": "TypeScript SDK for Cal.com v2 API - Modern, type-safe client for interacting with Cal.com's scheduling platform",
+  "author": {
+    "name": "Allan Ditzel",
+    "url": "https://github.com/aditzel"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aditzel/caldotcom-api-v2-sdk.git"
+  },
+  "keywords": [
+    "cal.com",
+    "caldotcom",
+    "calendar",
+    "scheduling",
+    "booking",
+    "appointments",
+    "api",
+    "sdk",
+    "typescript",
+    "cal-api"
+  ],
   "private": false,
   "type": "module",
   "main": "./dist/index.js",
