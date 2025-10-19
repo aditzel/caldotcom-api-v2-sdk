@@ -551,6 +551,21 @@ bun run format
 bun run examples/simple-usage.ts
 ```
 
+## Continuous Integration & Publishing
+
+- The `CI` workflow runs automatically on pushes to `main` and all pull requests. It installs dependencies with Bun, runs lint/build/test, and publishes the build output from `dist/` as a workflow artifact named `caldotcom-api-v2-sdk-dist`.
+- The `Publish Package` workflow runs when a tag matching `v*` is pushed (or when triggered manually). It re-validates lint/build/test and publishes the package to the GitHub Packages npm registry (`npm.pkg.github.com`) using the repository `GITHUB_TOKEN`.
+
+To cut a release:
+
+```bash
+# Update version in package.json, then create and push a tag
+git tag vX.Y.Z
+git push origin vX.Y.Z
+```
+
+The publish workflow uses the scoped package name `@aditzel/caldotcom-api-v2-sdk`, so no additional registry configuration is required for maintainers beyond repository access.
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
