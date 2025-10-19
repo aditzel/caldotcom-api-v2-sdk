@@ -1,5 +1,7 @@
 # Repository Guidelines
 
+> **Mandatory**: All work MUST comply with the [Project Constitution](./CONSTITUTION.md). A task is not complete until lint, build, and tests pass without errors.
+
 ## Project Structure & Module Organization
 The TypeScript sources live in `src/`, with shared HTTP utilities under `src/lib/`, resource clients in `src/resources/`, and exported types in `src/types/`. Tests mirror the public surface in `tests/` and follow the `*.test.ts` naming pattern. Build artifacts are generated into `dist/`; never edit files there directly. Example usage scripts and credential helpers are in `examples/`, while reusable automation sits in `scripts/`.
 

@@ -1,14 +1,22 @@
 import { describe, it, expect } from 'bun:test';
-import { CalComClient, version } from '../src/index';
+import { CalComClient, version } from '../src/index.js';
 
 describe('SDK bootstrap', () => {
   it('exposes version', () => {
     expect(typeof version).toBe('string');
   });
 
-  it('constructs and ping works', async () => {
-    const client = new CalComClient({ apiKey: 'test' });
-    const res = await client.ping();
-    expect(res.ok).toBe(true);
+  it('constructs with resource clients', () => {
+    const client = new CalComClient({
+      auth: {
+        type: 'apiKey',
+        apiKey: 'test-key',
+      },
+    });
+
+    expect(client).toBeDefined();
+    expect(client.bookings).toBeDefined();
+    expect(client.eventTypes).toBeDefined();
+    expect(client.me).toBeDefined();
   });
 });

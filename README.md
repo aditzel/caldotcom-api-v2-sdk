@@ -12,6 +12,8 @@ TypeScript SDK for Cal.com v2 API - A modern, type-safe client for interacting w
 - 🛡️ **Type-safe Error Handling** - Custom error classes for different failure scenarios
 - 🔌 **Resource-based API** - Intuitive object-oriented interface
 
+> 🛡️ **Project Constitution**: All contributors MUST follow the [Project Constitution](./CONSTITUTION.md), including the requirement that no task is done until linting, building, and the full test suite pass cleanly.
+
 ## Installation
 
 ```bash
@@ -292,6 +294,67 @@ const rescheduled = await client.bookings.reschedule(123, {
 });
 ```
 
+### Me (User Profile)
+
+#### Get User Profile
+
+```typescript
+const profile = await client.me.get();
+
+console.log(profile.email);      // User email
+console.log(profile.timeZone);   // IANA timezone
+console.log(profile.weekStart);  // Week start day
+console.log(profile.timeFormat); // 12 or 24
+```
+
+**Returns:**
+
+```typescript
+{
+  id: number;
+  username: string;
+  email: string;
+  name?: string;
+  timeFormat: TimeFormat;            // 12 or 24
+  defaultScheduleId: number | null;
+  weekStart: WeekStart;              // e.g., "Monday"
+  timeZone: TimeZone;                // IANA timezone
+  locale?: LanguageCode;
+  avatarUrl?: string | null;
+  bio?: string | null;
+  metadata?: Metadata;
+  organizationId: number | null;
+  organization?: UserOrganization;
+}
+```
+
+#### Update User Profile
+
+```typescript
+const updated = await client.me.update({
+  timeZone: 'America/Los_Angeles',
+  weekStart: 'Monday',
+  timeFormat: 24,
+  bio: 'Software developer and scheduling enthusiast',
+  metadata: {
+    preference: 'darkMode',
+    customField: 'value'
+  }
+});
+```
+
+**Available Fields:**
+- `email?: string` - User email
+- `name?: string` - Display name
+- `timeFormat?: 12 | 24` - Time format preference
+- `defaultScheduleId?: number | null` - Default schedule ID
+- `weekStart?: WeekStart` - First day of week
+- `timeZone?: TimeZone` - IANA timezone
+- `locale?: LanguageCode` - Language preference
+- `avatarUrl?: string | null` - Avatar image URL
+- `bio?: string | null` - User biography
+- `metadata?: Metadata` - Custom metadata (max 50 keys, key ≤40 chars, value ≤500 chars)
+
 ### Event Types
 
 #### Create an Event Type
@@ -487,6 +550,21 @@ bun run format
 # Run examples
 bun run examples/simple-usage.ts
 ```
+
+## Continuous Integration & Publishing
+
+- The `CI` workflow runs automatically on pushes to `main` and all pull requests. It installs dependencies with Bun, runs lint/build/test, and publishes the build output from `dist/` as a workflow artifact named `caldotcom-api-v2-sdk-dist`.
+- The `Publish Package` workflow runs when a tag matching `v*` is pushed (or when triggered manually). It re-validates lint/build/test and publishes the package to the GitHub Packages npm registry (`npm.pkg.github.com`) using the repository `GITHUB_TOKEN`.
+
+To cut a release:
+
+```bash
+# Update version in package.json, then create and push a tag
+git tag vX.Y.Z
+git push origin vX.Y.Z
+```
+
+The publish workflow uses the scoped package name `@aditzel/caldotcom-api-v2-sdk`, so no additional registry configuration is required for maintainers beyond repository access.
 
 ## Contributing
 
