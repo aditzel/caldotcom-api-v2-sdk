@@ -141,8 +141,8 @@ export class HttpClient {
         await this.handleErrorResponse(response);
       }
 
-      const data = (await response.json()) as unknown;
-      return data as T;
+      const data = (await response.json()) as T;
+      return data;
     } catch (error) {
       // Retry on network errors or 5xx server errors
       const shouldRetry =

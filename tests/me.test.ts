@@ -116,30 +116,12 @@ describe('MeResource', () => {
               profileState = { ...profileState, bio };
             }
           }
-          if ('organizationId' in parsedBody) {
-            const { organizationId } = parsedBody;
-            if (typeof organizationId === 'number' || organizationId === null) {
-              profileState = { ...profileState, organizationId };
-            }
-          }
           if (isRecord(parsedBody.metadata)) {
             const entries = Object.entries(parsedBody.metadata);
             if (entries.every(([, value]) => ['string', 'number', 'boolean'].includes(typeof value))) {
               profileState = {
                 ...profileState,
                 metadata: parsedBody.metadata as Record<string, string | number | boolean>,
-              };
-            }
-          }
-          if (isRecord(parsedBody.organization)) {
-            const { isPlatform, id } = parsedBody.organization;
-            if (typeof isPlatform === 'boolean' && typeof id === 'number') {
-              profileState = {
-                ...profileState,
-                organization: {
-                  isPlatform,
-                  id,
-                },
               };
             }
           }

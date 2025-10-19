@@ -311,23 +311,20 @@ console.log(profile.timeFormat); // 12 or 24
 
 ```typescript
 {
-  id: number,
-  username: string,
-  email: string,
-  name?: string,
-  timeFormat: number,           // 12 or 24
-  defaultScheduleId: number | null,
-  weekStart: string,            // e.g., "Monday"
-  timeZone: string,             // IANA timezone
-  locale?: string,
-  avatarUrl?: string | null,
-  bio?: string | null,
-  metadata?: Record<string, string | number | boolean>,
-  organizationId: number | null,
-  organization?: {
-    isPlatform: boolean,
-    id: number
-  }
+  id: number;
+  username: string;
+  email: string;
+  name?: string;
+  timeFormat: TimeFormat;            // 12 or 24
+  defaultScheduleId: number | null;
+  weekStart: WeekStart;              // e.g., "Monday"
+  timeZone: TimeZone;                // IANA timezone
+  locale?: LanguageCode;
+  avatarUrl?: string | null;
+  bio?: string | null;
+  metadata?: Metadata;
+  organizationId: number | null;
+  organization?: UserOrganization;
 }
 ```
 
@@ -350,13 +347,13 @@ const updated = await client.me.update({
 - `email?: string` - User email
 - `name?: string` - Display name
 - `timeFormat?: 12 | 24` - Time format preference
-- `defaultScheduleId?: number` - Default schedule ID
+- `defaultScheduleId?: number | null` - Default schedule ID
 - `weekStart?: WeekStart` - First day of week
-- `timeZone?: string` - IANA timezone
+- `timeZone?: TimeZone` - IANA timezone
 - `locale?: LanguageCode` - Language preference
-- `avatarUrl?: string` - Avatar image URL
-- `bio?: string` - User biography
-- `metadata?: Record<string, string | number | boolean>` - Custom metadata (max 50 keys, key ≤40 chars, value ≤500 chars)
+- `avatarUrl?: string | null` - Avatar image URL
+- `bio?: string | null` - User biography
+- `metadata?: Metadata` - Custom metadata (max 50 keys, key ≤40 chars, value ≤500 chars)
 
 ### Event Types
 

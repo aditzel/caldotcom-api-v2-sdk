@@ -56,11 +56,11 @@ export type UpdateUserProfileInput = {
   email?: string;
   name?: string;
   timeFormat?: TimeFormat;
-  defaultScheduleId?: number;
+  defaultScheduleId?: number | null;
   weekStart?: WeekStart;
   timeZone?: TimeZone;
   locale?: LanguageCode;
-  avatarUrl?: string;
-  bio?: string;
+  avatarUrl?: string | null;
+  bio?: string | null;
   metadata?: Metadata;
 };
