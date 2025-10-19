@@ -12,6 +12,8 @@ TypeScript SDK for Cal.com v2 API - A modern, type-safe client for interacting w
 - 🛡️ **Type-safe Error Handling** - Custom error classes for different failure scenarios
 - 🔌 **Resource-based API** - Intuitive object-oriented interface
 
+> 🛡️ **Project Constitution**: All contributors MUST follow the [Project Constitution](./CONSTITUTION.md), including the requirement that no task is done until linting, building, and the full test suite pass cleanly.
+
 ## Installation
 
 ```bash
@@ -291,6 +293,70 @@ const rescheduled = await client.bookings.reschedule(123, {
   reschedulingReason: 'Time conflict',
 });
 ```
+
+### Me (User Profile)
+
+#### Get User Profile
+
+```typescript
+const profile = await client.me.get();
+
+console.log(profile.email);      // User email
+console.log(profile.timeZone);   // IANA timezone
+console.log(profile.weekStart);  // Week start day
+console.log(profile.timeFormat); // 12 or 24
+```
+
+**Returns:**
+
+```typescript
+{
+  id: number,
+  username: string,
+  email: string,
+  name?: string,
+  timeFormat: number,           // 12 or 24
+  defaultScheduleId: number | null,
+  weekStart: string,            // e.g., "Monday"
+  timeZone: string,             // IANA timezone
+  locale?: string,
+  avatarUrl?: string | null,
+  bio?: string | null,
+  metadata?: Record<string, string | number | boolean>,
+  organizationId: number | null,
+  organization?: {
+    isPlatform: boolean,
+    id: number
+  }
+}
+```
+
+#### Update User Profile
+
+```typescript
+const updated = await client.me.update({
+  timeZone: 'America/Los_Angeles',
+  weekStart: 'Monday',
+  timeFormat: 24,
+  bio: 'Software developer and scheduling enthusiast',
+  metadata: {
+    preference: 'darkMode',
+    customField: 'value'
+  }
+});
+```
+
+**Available Fields:**
+- `email?: string` - User email
+- `name?: string` - Display name
+- `timeFormat?: 12 | 24` - Time format preference
+- `defaultScheduleId?: number` - Default schedule ID
+- `weekStart?: WeekStart` - First day of week
+- `timeZone?: string` - IANA timezone
+- `locale?: LanguageCode` - Language preference
+- `avatarUrl?: string` - Avatar image URL
+- `bio?: string` - User biography
+- `metadata?: Record<string, string | number | boolean>` - Custom metadata (max 50 keys, key ≤40 chars, value ≤500 chars)
 
 ### Event Types
 

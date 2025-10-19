@@ -6,6 +6,7 @@
 import { HttpClient } from './lib/http-client.js';
 import { BookingsResource } from './resources/bookings.js';
 import { EventTypesResource } from './resources/event-types.js';
+import { MeResource } from './resources/me.js';
 import type { AuthConfig } from './types/auth.js';
 
 // Export all types
@@ -93,6 +94,11 @@ export class CalComClient {
    */
   public readonly eventTypes: EventTypesResource;
 
+  /**
+   * Me (User Profile) resource
+   */
+  public readonly me: MeResource;
+
   constructor(options: CalComClientOptions) {
     this.http = new HttpClient({
       baseUrl: options.baseUrl,
@@ -105,6 +111,7 @@ export class CalComClient {
     // Initialize resource clients
     this.bookings = new BookingsResource(this.http);
     this.eventTypes = new EventTypesResource(this.http);
+    this.me = new MeResource(this.http);
   }
 }
 
