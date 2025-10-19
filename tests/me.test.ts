@@ -18,7 +18,7 @@ describe('MeResource', () => {
       username: 'test-user',
       email: 'test@example.com',
       timeFormat: 12,
-      defaultScheduleId: null,
+      defaultScheduleId: 123,
       weekStart: 'Sunday',
       timeZone: 'UTC',
       organizationId: null,
@@ -198,11 +198,14 @@ describe('MeResource', () => {
       });
 
       expect(lastRequest?.method).toBe('PATCH');
-      if (lastRequest && isRecord(lastRequest.body) && isRecord(lastRequest.body.metadata)) {
-        expect(lastRequest.body.metadata.testKey).toBe('testValue');
-      } else {
-        throw new Error('Expected metadata payload to be recorded');
-      }
+      expect(lastRequest?.body).toBeDefined();
+      expect(isRecord(lastRequest?.body)).toBe(true);
+
+      const body = lastRequest!.body as Record<string, unknown>;
+      expect(isRecord(body.metadata)).toBe(true);
+
+      const metadata = body.metadata as Record<string, unknown>;
+      expect(metadata.testKey).toBe('testValue');
       expect(updated).toBeDefined();
       expect(updated.bio).toBe('Test bio');
       expect(updated.metadata?.testKey).toBe('testValue');
@@ -215,6 +218,19 @@ describe('MeResource', () => {
 
       expect(lastRequest?.method).toBe('PATCH');
       expect(updated.timeZone).toBe('America/New_York');
+    });
+
+    it('should clear optional fields when null is provided', async () => {
+      const updated = await client.me.update({
+        bio: null,
+        avatarUrl: null,
+        defaultScheduleId: null,
+      });
+
+      expect(lastRequest?.method).toBe('PATCH');
+      expect(updated.bio).toBeNull();
+      expect(updated.avatarUrl).toBeNull();
+      expect(updated.defaultScheduleId).toBeNull();
     });
   });
 });
