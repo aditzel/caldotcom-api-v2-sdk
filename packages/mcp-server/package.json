@@ -1,0 +1,17 @@
+{
+  "name": "@aditzel/caldotcom-mcp-server",
+  "version": "0.1.0",
+  "description": "MCP Server for Cal.com API v2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "echo 'No build yet'",
+    "test": "echo 'No test yet'",
+    "lint": "echo 'No lint yet'"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.4"
+  }
+}

@@ -37,5 +37,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: caldotcom-api-v2-sdk-dist
-          path: dist
+          path: packages/sdk/dist
           if-no-files-found: error
