@@ -1,33 +1,29 @@
 
 import { describe, it, expect, mock, beforeEach } from 'bun:test';
-import { CalComClient } from '../../src/index';
+import { MeResource } from '../../src/resources/me';
+import type { HttpClient } from '../../src/lib/http-client';
 
 describe('Me Resource', () => {
-  let client: CalComClient;
-  let mockGet: any;
-  let mockPatch: any;
+  let resource: MeResource;
+  let mockHttp: HttpClient;
 
   beforeEach(() => {
-    client = new CalComClient({
-      auth: { type: 'apiKey', apiKey: 'test-key' },
-    });
+    mockHttp = {
+      get: mock(() => Promise.resolve({ data: {} })),
+      patch: mock(() => Promise.resolve({ data: {} })),
+    } as unknown as HttpClient;
 
-    const http = (client as any).http;
-    mockGet = mock(() => Promise.resolve({ data: {} }));
-    mockPatch = mock(() => Promise.resolve({ data: {} }));
-
-    http.get = mockGet;
-    http.patch = mockPatch;
+    resource = new MeResource(mockHttp);
   });
 
   it('gets current user', async () => {
-    await client.me.get();
-    expect(mockGet).toHaveBeenCalledWith('/me');
+    await resource.get();
+    expect(mockHttp.get).toHaveBeenCalledWith('/me');
   });
 
   it('updates current user', async () => {
     const input = { bio: 'New Bio' };
-    await client.me.update(input);
-    expect(mockPatch).toHaveBeenCalledWith('/me', input);
+    await resource.update(input);
+    expect(mockHttp.patch).toHaveBeenCalledWith('/me', input);
   });
 });

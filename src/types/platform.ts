@@ -2,7 +2,7 @@
  * Platform types for Cal.com v2 API
  */
 
-import type { UpdateMeInput } from './me.js';
+import type { UpdateUserProfileInput } from './me.js';
 import type { WebhookTrigger } from './webhooks.js';
 
 export type CreateManagedUserInput = {
@@ -41,7 +41,7 @@ export type CreateManagedUserData = {
   refreshTokenExpiresAt: number;
 };
 
-export type UpdateManagedUserInput = UpdateMeInput;
+export type UpdateManagedUserInput = UpdateUserProfileInput;
 
 export type PlatformWebhook = {
   id: number;

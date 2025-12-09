@@ -1,34 +1,27 @@
 
 import { describe, it, expect, mock, beforeEach } from 'bun:test';
-import { CalComClient } from '../../src/index';
+import { CalendarsResource } from '../../src/resources/calendars';
+import type { HttpClient } from '../../src/lib/http-client';
 
 describe('Calendars Resource', () => {
-  let client: CalComClient;
-  let mockGet: any;
-  let mockPost: any;
-  let mockPut: any;
-  let mockDelete: any;
+  let resource: CalendarsResource;
+  let mockHttp: HttpClient;
 
   beforeEach(() => {
-    client = new CalComClient({
-      auth: { type: 'apiKey', apiKey: 'test-key' },
-    });
+    mockHttp = {
+      get: mock(() => Promise.resolve({ data: {} })),
+      post: mock(() => Promise.resolve({ data: {} })),
+      put: mock(() => Promise.resolve({ data: {} })),
+      patch: mock(() => Promise.resolve({ data: {} })),
+      delete: mock(() => Promise.resolve({ data: {} })),
+    } as unknown as HttpClient;
 
-    const http = (client as any).http;
-    mockGet = mock(() => Promise.resolve({ data: {} }));
-    mockPost = mock(() => Promise.resolve({ data: {} }));
-    mockPut = mock(() => Promise.resolve({ data: {} }));
-    mockDelete = mock(() => Promise.resolve({ data: {} }));
-
-    http.get = mockGet;
-    http.post = mockPost;
-    http.put = mockPut;
-    http.delete = mockDelete;
+    resource = new CalendarsResource(mockHttp);
   });
 
   it('lists connected calendars', async () => {
-    await client.calendars.list();
-    expect(mockGet).toHaveBeenCalledWith('/calendars');
+    await resource.list();
+    expect(mockHttp.get).toHaveBeenCalledWith('/calendars');
   });
 
   it('updates destination calendar', async () => {
@@ -37,8 +30,8 @@ describe('Calendars Resource', () => {
       externalId: 'primary@example.com',
       credentialId: 1
     };
-    await client.calendars.updateDestination(input);
-    expect(mockPut).toHaveBeenCalledWith('/destination-calendars', input);
+    await resource.updateDestination(input);
+    expect(mockHttp.put).toHaveBeenCalledWith('/destination-calendars', input);
   });
 
   it('adds selected calendar', async () => {
@@ -47,8 +40,8 @@ describe('Calendars Resource', () => {
       externalId: 'other@example.com',
       credentialId: 1
     };
-    await client.calendars.addSelected(input);
-    expect(mockPost).toHaveBeenCalledWith('/selected-calendars', input);
+    await resource.addSelected(input);
+    expect(mockHttp.post).toHaveBeenCalledWith('/selected-calendars', input);
   });
 
   it('removes selected calendar', async () => {
@@ -57,7 +50,7 @@ describe('Calendars Resource', () => {
       externalId: 'other@example.com',
       credentialId: 1
     };
-    await client.calendars.removeSelected(input);
-    expect(mockDelete).toHaveBeenCalledWith('/selected-calendars', input);
+    await resource.removeSelected(input);
+    expect(mockHttp.delete).toHaveBeenCalledWith('/selected-calendars', input);
   });
 });

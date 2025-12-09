@@ -17,5 +17,4 @@ describe('SDK bootstrap', () => {
     expect(client.bookings).toBeDefined();
     expect(client.eventTypes).toBeDefined();
   });
-  });
 });

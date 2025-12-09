@@ -1,37 +1,33 @@
 
 import { describe, it, expect, mock, beforeEach } from 'bun:test';
-import { CalComClient } from '../../src/index';
+import { ConferencingResource } from '../../src/resources/conferencing';
+import type { HttpClient } from '../../src/lib/http-client';
 
 describe('Conferencing Resource', () => {
-  let client: CalComClient;
-  let mockGet: any;
-  let mockPost: any;
+  let resource: ConferencingResource;
+  let mockHttp: HttpClient;
 
   beforeEach(() => {
-    client = new CalComClient({
-      auth: { type: 'apiKey', apiKey: 'test-key' },
-    });
+    mockHttp = {
+      get: mock(() => Promise.resolve({ data: {} })),
+      post: mock(() => Promise.resolve({ data: {} })),
+    } as unknown as HttpClient;
 
-    const http = (client as any).http;
-    mockGet = mock(() => Promise.resolve({ data: {} }));
-    mockPost = mock(() => Promise.resolve({ data: {} }));
-
-    http.get = mockGet;
-    http.post = mockPost;
+    resource = new ConferencingResource(mockHttp);
   });
 
   it('lists conferencing apps', async () => {
-    await client.conferencing.list();
-    expect(mockGet).toHaveBeenCalledWith('/conferencing');
+    await resource.list();
+    expect(mockHttp.get).toHaveBeenCalledWith('/conferencing');
   });
 
   it('gets default app', async () => {
-    await client.conferencing.getDefault();
-    expect(mockGet).toHaveBeenCalledWith('/conferencing/default');
+    await resource.getDefault();
+    expect(mockHttp.get).toHaveBeenCalledWith('/conferencing/default');
   });
 
   it('sets default app', async () => {
-    await client.conferencing.setDefault('zoom');
-    expect(mockPost).toHaveBeenCalledWith('/conferencing/zoom/default', {});
+    await resource.setDefault('zoom');
+    expect(mockHttp.post).toHaveBeenCalledWith('/conferencing/zoom/default', {});
   });
 });
