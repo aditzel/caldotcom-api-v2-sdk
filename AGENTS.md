@@ -10,4 +10,4 @@ The TypeScript SDK for Cal.com v2 API.
 
 ### MCP Server (@aditzel/caldotcom-mcp-server)
 An MCP server implementation for Cal.com.
-*(Coming soon)*
+- [MCP Server README](packages/mcp-server/README.md)
