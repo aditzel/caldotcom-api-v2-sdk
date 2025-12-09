@@ -1,25 +1,58 @@
-# Repository Guidelines
+# Cal.com API v2 SDK - Agent Guide
 
-> **Mandatory**: All work MUST comply with the [Project Constitution](./CONSTITUTION.md). A task is not complete until lint, build, and tests pass without errors.
+## Project Snapshot
+- **Type**: Single TypeScript Project (SDK)
+- **Stack**: TypeScript, Bun (Runtime + Tooling)
+- **Goal**: Type-safe SDK for Cal.com v2 API
+- **Sub-Agents**:
+  - Source Logic: [src/AGENTS.md](src/AGENTS.md)
+  - Testing: [tests/AGENTS.md](tests/AGENTS.md)
 
-## Project Structure & Module Organization
-The TypeScript sources live in `src/`, with shared HTTP utilities under `src/lib/`, resource clients in `src/resources/`, and exported types in `src/types/`. Tests mirror the public surface in `tests/` and follow the `*.test.ts` naming pattern. Build artifacts are generated into `dist/`; never edit files there directly. Example usage scripts and credential helpers are in `examples/`, while reusable automation sits in `scripts/`.
+## Root Setup Commands
+```bash
+# Install dependencies
+bun install
 
-## Build, Test, and Development Commands
-- `bun install` installs dependencies (Bun20 1.3.4+ recommended).
-- `bun run build` calls `scripts/build.sh` to produce ESM, CJS, and declaration bundles in `dist/`.
-- `bun test` runs the Bun test runner; use `bun test --watch` while iterating.
-- `bun run lint`, `bun run lint:fix`, and `bun run format` enforce ESLint and Prettier rules.
-- `bun run typecheck` (or `bunx tsc -p tsconfig.json --noEmit`) verifies project-wide types.
+# Build the SDK (ESM, CJS, Types)
+bun run build
 
-## Coding Style & Naming Conventions
-Follow strict TypeScript with ES modules. Use two-space indentation, trailing semicolons, and prefer type-only imports to satisfy `@typescript-eslint/consistent-type-imports`. Avoid `any`; if unavoidable, document why and consider narrowing the type later. Keep parameter names descriptive and resources named after API nouns (e.g., `BookingsResource`). External logging is discouraged because `no-console` warns by default—wrap diagnostics behind utilities if needed.
+# Run all tests
+bun test
 
-## Testing Guidelines
-Tests use `bun:test`. Scope each describe block to a resource or helper and name files after the feature under test (e.g., `bookings.test.ts`). Keep assertions focused and mock network calls via the HTTP client layer. There is no enforced coverage threshold yet, but all new behavior should ship with meaningful tests and pass `bun test` locally before review.
+# Lint & Format
+bun run lint
+bun run format
+bun run typecheck
+```
 
-## Commit & Pull Request Guidelines
-Commits follow Conventional Commits (`feat:`, `fix:`, `chore:`) as seen in the history. Keep messages in present tense and limit the summary to ~70 characters. Pull requests should summarize intent, list any follow-up work, and link issues or discussions when available. Include screenshots or logs when touching developer ergonomics. Confirm `bun run build`, `bun test`, and `bun run lint` succeed before requesting review.
+## Universal Conventions
+- **Style**: Prettier + ESLint (Standard Config).
+- **Language**: Strict TypeScript (no `any` unless absolutely necessary).
+- **Commits**: Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`).
+- **Imports**: Use `.js` extension for local imports (ESM requirement).
+  - ✅ `import { Foo } from './foo.js';`
+  - ❌ `import { Foo } from './foo';`
 
-## Security & Configuration Tips
-Copy `.env.example` to `.env` for local secrets and never commit real keys. When adding new configuration flags, document their defaults in `README.md` and expose them through `CalComClientOptions` so downstream consumers receive type-safe access.
+## Security & Secrets
+- **Secrets**: Never commit keys. Use `.env` (template in `.env.example`).
+- **Auth**: SDK handles API keys/OAuth; never log credentials.
+- **Git**: Ensure `.env` is in `.gitignore`.
+
+## JIT Index (Directory Map)
+### Core Structure
+- SDK Logic: `src/` → [see src/AGENTS.md](src/AGENTS.md)
+- Tests: `tests/` → [see tests/AGENTS.md](tests/AGENTS.md)
+- Scripts: `scripts/` → Build automation (`build.sh`)
+
+### Quick Find Commands
+- **Find Resource Class**: `rg "class .*Resource"`
+- **Find Type Definition**: `rg "export (type|interface)" src/types`
+- **Find Error Class**: `rg "class .*Error" src/lib/errors.ts`
+- **Find Example Usage**: `ls examples/`
+
+## Definition of Done
+1.  Code compiles (`bun run build` passes).
+2.  Types are valid (`bun run typecheck` passes).
+3.  Linting passes (`bun run lint`).
+4.  Tests pass (`bun test`).
+5.  New resources have corresponding tests.
