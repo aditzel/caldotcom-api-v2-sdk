@@ -44,6 +44,10 @@ export class HttpClient {
     this.maxRetries = options.maxRetries ?? 3;
   }
 
+  getAuth(): AuthConfig {
+    return this.auth;
+  }
+
   /**
    * Build authentication headers based on auth config
    */
@@ -141,8 +145,8 @@ export class HttpClient {
         await this.handleErrorResponse(response);
       }
 
-      const data = (await response.json()) as T;
-      return data;
+      const data: unknown = await response.json();
+      return data as T;
     } catch (error) {
       // Retry on network errors or 5xx server errors
       const shouldRetry =
@@ -219,7 +223,7 @@ export class HttpClient {
   /**
    * Convenience method for DELETE requests
    */
-  async delete<T>(path: string): Promise<T> {
-    return this.request<T>({ method: 'DELETE', path });
+  async delete<T>(path: string, query?: Record<string, string | number | boolean | undefined>): Promise<T> {
+    return this.request<T>({ method: 'DELETE', path, query });
   }
 }

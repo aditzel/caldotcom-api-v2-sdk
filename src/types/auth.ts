@@ -42,13 +42,3 @@ export type TokenRefreshResponse = {
   expiresIn: number; // seconds until expiration (typically 3600 for access token)
 };
 
-/**
- * Managed user creation response
- */
-export type ManagedUser = {
-  id: number;
-  email: string;
-  username: string;
-  accessToken: string;
-  refreshToken: string;
-};

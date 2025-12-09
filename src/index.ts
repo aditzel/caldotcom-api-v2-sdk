@@ -7,6 +7,15 @@ import { HttpClient } from './lib/http-client.js';
 import { BookingsResource } from './resources/bookings.js';
 import { EventTypesResource } from './resources/event-types.js';
 import { MeResource } from './resources/me.js';
+import { SchedulesResource } from './resources/schedules.js';
+import { TeamsResource } from './resources/teams.js';
+import { WebhooksResource } from './resources/webhooks.js';
+import { SlotsResource } from './resources/slots.js';
+import { CalendarsResource } from './resources/calendars.js';
+import { ConferencingResource } from './resources/conferencing.js';
+import { ManagedUsersResource } from './resources/platform/managed-users.js';
+import { PlatformWebhooksResource } from './resources/platform/webhooks.js';
+import { OrganizationsResource } from './resources/organizations.js';
 import type { AuthConfig } from './types/auth.js';
 
 // Export all types
@@ -99,6 +108,19 @@ export class CalComClient {
    */
   public readonly me: MeResource;
 
+  public readonly schedules: SchedulesResource;
+  public readonly teams: TeamsResource;
+  public readonly webhooks: WebhooksResource;
+  public readonly slots: SlotsResource;
+  public readonly calendars: CalendarsResource;
+  public readonly conferencing: ConferencingResource;
+  public readonly organizations: OrganizationsResource;
+  
+  public readonly platform: {
+    managedUsers: ManagedUsersResource;
+    webhooks: PlatformWebhooksResource;
+  };
+
   constructor(options: CalComClientOptions) {
     this.http = new HttpClient({
       baseUrl: options.baseUrl,
@@ -112,6 +134,18 @@ export class CalComClient {
     this.bookings = new BookingsResource(this.http);
     this.eventTypes = new EventTypesResource(this.http);
     this.me = new MeResource(this.http);
+    this.schedules = new SchedulesResource(this.http);
+    this.teams = new TeamsResource(this.http);
+    this.webhooks = new WebhooksResource(this.http);
+    this.slots = new SlotsResource(this.http);
+    this.calendars = new CalendarsResource(this.http);
+    this.conferencing = new ConferencingResource(this.http);
+    this.organizations = new OrganizationsResource(this.http);
+    
+    this.platform = {
+      managedUsers: new ManagedUsersResource(this.http),
+      webhooks: new PlatformWebhooksResource(this.http),
+    };
   }
 }
 
