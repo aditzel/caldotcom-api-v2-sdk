@@ -73,7 +73,12 @@ export class HttpClient {
    * Build full URL with query parameters
    */
   private buildUrl(path: string, query?: Record<string, string | number | boolean | undefined>): string {
-    const url = new URL(path, this.baseUrl);
+    // Handle path joining manually to preserve path in baseUrl
+    const base = this.baseUrl.endsWith('/') ? this.baseUrl.slice(0, -1) : this.baseUrl;
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    const urlStr = `${base}${normalizedPath}`;
+    
+    const url = new URL(urlStr);
     
     if (query) {
       Object.entries(query).forEach(([key, value]) => {
