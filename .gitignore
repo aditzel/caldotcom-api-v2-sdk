@@ -19,3 +19,8 @@ coverage/
 # Intentionally keep bun.lockb and .bun/ tracked (Bun best practice)
 # bun.lockb
 # .bun/
+
+# Python
+__pycache__/
+.venv/
+*.pyc

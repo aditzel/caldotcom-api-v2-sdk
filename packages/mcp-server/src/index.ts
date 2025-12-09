@@ -1,20 +1,5 @@
 import { FastMCP } from 'fastmcp';
-import { z } from 'zod';
-import { CalComClient } from 'caldotcom-api-v2-sdk';
-
-const apiKey = process.env.CAL_API_KEY;
-
-if (!apiKey) {
-  console.error('CAL_API_KEY environment variable is required');
-  process.exit(1);
-}
-
-const client = new CalComClient({
-  auth: {
-    type: 'apiKey',
-    apiKey,
-  },
-});
+import { listBookings, listBookingsSchema } from './tools';
 
 const server = new FastMCP({
   name: 'Cal.com API v2',
@@ -24,23 +9,17 @@ const server = new FastMCP({
 server.addTool({
   name: 'list_bookings',
   description: 'List bookings',
-  parameters: z.object({
-    limit: z.number().optional().default(10),
-    status: z.enum(['upcoming', 'recurring', 'past', 'cancelled', 'unconfirmed']).optional(),
-  }),
+  parameters: listBookingsSchema,
   execute: async (args) => {
-    const { limit, status } = args;
     try {
-      const bookings = await client.bookings.list({
-        take: limit,
-        // @ts-ignore - status type matching
-        status: status as any,
-      });
+      const bookings = await listBookings(args);
       return JSON.stringify(bookings, null, 2);
-    } catch (error) {
-      return `Error fetching bookings: ${error}`;
+    } catch (error: any) {
+      return `Error fetching bookings: ${error.message}`;
     }
   },
 });
 
-server.start();
+server.start({
+  transportType: 'stdio',
+});
