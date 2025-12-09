@@ -528,6 +528,8 @@ See `examples/basic-usage.ts` for comprehensive examples of:
 
 ## Development
 
+Requires Bun 1.3.4+.
+
 ```bash
 # Install dependencies
 bun install
@@ -536,7 +538,7 @@ bun install
 bun test
 
 # Type check
-npx tsc --noEmit
+bun run typecheck
 
 # Build
 bun run build

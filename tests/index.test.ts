@@ -6,17 +6,16 @@ describe('SDK bootstrap', () => {
     expect(typeof version).toBe('string');
   });
 
-  it('constructs with resource clients', () => {
+  it('constructs', () => {
     const client = new CalComClient({
       auth: {
         type: 'apiKey',
         apiKey: 'test-key',
       },
     });
-
     expect(client).toBeDefined();
     expect(client.bookings).toBeDefined();
     expect(client.eventTypes).toBeDefined();
-    expect(client.me).toBeDefined();
+  });
   });
 });

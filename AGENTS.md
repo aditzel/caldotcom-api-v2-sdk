@@ -6,7 +6,7 @@
 The TypeScript sources live in `src/`, with shared HTTP utilities under `src/lib/`, resource clients in `src/resources/`, and exported types in `src/types/`. Tests mirror the public surface in `tests/` and follow the `*.test.ts` naming pattern. Build artifacts are generated into `dist/`; never edit files there directly. Example usage scripts and credential helpers are in `examples/`, while reusable automation sits in `scripts/`.
 
 ## Build, Test, and Development Commands
-- `bun install` installs dependencies (Bun 1.3+ recommended).
+- `bun install` installs dependencies (Bun20 1.3.4+ recommended).
 - `bun run build` calls `scripts/build.sh` to produce ESM, CJS, and declaration bundles in `dist/`.
 - `bun test` runs the Bun test runner; use `bun test --watch` while iterating.
 - `bun run lint`, `bun run lint:fix`, and `bun run format` enforce ESLint and Prettier rules.

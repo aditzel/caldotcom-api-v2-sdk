@@ -115,7 +115,7 @@ const client = new CalComClient({
 
 #### Bun
 
-Bun loads `.env` files automatically - no additional setup needed!
+Bun 1.3.4+ loads `.env` files automatically - no additional setup needed!
 
 ```typescript
 import { CalComClient } from '@aditzel/caldotcom-api-v2-sdk';
