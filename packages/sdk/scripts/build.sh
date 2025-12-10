@@ -6,13 +6,13 @@ rm -rf dist
 mkdir -p dist
 
 # Build ESM
-$HOME/.bun/bin/bun build ./src/index.ts --format esm --outdir ./dist --entry-naming index.mjs --sourcemap
+bun build ./src/index.ts --format esm --outdir ./dist --entry-naming index.mjs --sourcemap
 
 # Build CJS  
-$HOME/.bun/bin/bun build ./src/index.ts --format cjs --outdir ./dist --entry-naming index.cjs --sourcemap
+bun build ./src/index.ts --format cjs --outdir ./dist --entry-naming index.cjs --sourcemap
 
 # Build types
-$HOME/.bun/bin/bunx tsc -p tsconfig.build.json
+bunx tsc -p tsconfig.build.json
 
 # Copy index.mjs to index.js for main entry
 cp dist/index.mjs dist/index.js
