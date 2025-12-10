@@ -15,7 +15,6 @@ RUN bun install --frozen-lockfile
 # Copy source code
 COPY packages/sdk packages/sdk
 COPY packages/mcp-server packages/mcp-server
-COPY tsconfig.json .
 
 # Build the SDK and Server
 RUN bun run --cwd packages/sdk build
