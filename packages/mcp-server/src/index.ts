@@ -1,5 +1,5 @@
 import { FastMCP } from 'fastmcp';
-import { listBookings, listBookingsSchema } from './tools';
+import { listBookings, listBookingsSchema } from './tools.js';
 
 const server = new FastMCP({
   name: 'Cal.com API v2',
