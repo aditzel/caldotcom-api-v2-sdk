@@ -20,6 +20,18 @@ server.addTool({
   },
 });
 
+const transportType = process.env.MCP_TRANSPORT === 'stdio' ? 'stdio' : 'httpStream';
+const port = parseInt(process.env.PORT || '8080', 10);
+
+if (transportType === 'httpStream') {
+  console.error(`Starting MCP server on port ${port} (HTTP Stream)`);
+}
+
 server.start({
-  transportType: 'stdio',
+  transportType,
+  httpStream: {
+    endpoint: '/mcp',
+    port,
+    host: '0.0.0.0',
+  },
 });

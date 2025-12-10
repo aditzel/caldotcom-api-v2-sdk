@@ -21,8 +21,20 @@ This is an MCP server for the Cal.com API v2, built using FastMCP and the Cal.co
 
 ## Running
 
+### HTTP Mode (Default)
+Runs an HTTP server with an endpoint at `/mcp`.
 ```bash
+# Default: port 8080
 bun start
+
+# Custom port
+PORT=3000 bun start
+```
+
+### STDIO Mode
+Standard mode for connecting to local clients (e.g., Claude Desktop).
+```bash
+MCP_TRANSPORT=stdio bun start
 ```
 
 ## Tools

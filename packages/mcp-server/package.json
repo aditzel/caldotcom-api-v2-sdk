@@ -1,9 +1,12 @@
 {
   "name": "@aditzel/caldotcom-mcp-server",
   "version": "0.1.0",
-  "description": "MCP Server for Cal.com API v2",
-  "private": true,
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
+  "description": "MCP Server for Cal.com API v2",
   "scripts": {
     "build": "tsc",
     "start": "bun run src/index.ts",
