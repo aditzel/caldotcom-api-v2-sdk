@@ -5,6 +5,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 rm -f -- sdk-dist.tar.gz sdk-dist.tar.gz.tmp
 exec python3 -I -B - "$@" <<'PY'
 import os
+import importlib.util
 from pathlib import Path
 import shutil
 import signal
@@ -13,10 +14,15 @@ import subprocess
 import sys
 import tempfile
 import time
+import tarfile
+import zlib
 
 ROOT = Path.cwd()
 ARCHIVE = ROOT / "sdk-dist.tar.gz"
 PARTIAL = ROOT / "sdk-dist.tar.gz.tmp"
+spec = importlib.util.spec_from_file_location("cal_package_release", ROOT / "scripts/buildkite/package_release.py")
+package_release = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(package_release)
 cancel_signal = 0
 
 
@@ -56,12 +62,12 @@ def stop_group(process):
     process.wait(timeout=1)
 
 
-def run(command, env, capture=False):
+def run(command, env, capture=False, cwd=ROOT):
     check_cancelled()
     print("+ " + " ".join(command), flush=True)
     # Record signals without raising across Popen's launch window. Commands own
     # separate groups so their descendants can be stopped after a leader exits.
-    process = subprocess.Popen(command, cwd=ROOT, env=env, start_new_session=True,
+    process = subprocess.Popen(command, cwd=cwd, env=env, start_new_session=True,
                                stdout=subprocess.PIPE if capture else None, text=True)
     try:
         while True:
@@ -85,9 +91,12 @@ def environment(work):
              "BUN_INSTALL_CACHE_DIR": "bun-cache", "NPM_CONFIG_CACHE": "npm-cache"}
     for name in paths.values():
         (work / name).mkdir()
+    for name in ("npm-user.npmrc", "npm-global.npmrc"):
+        (work / name).touch(mode=0o600)
     return {**{key: str(work / name) for key, name in paths.items()},
             "PATH": os.environ.get("PATH", os.defpath), "LANG": "C.UTF-8", "CI": "true",
-            "NPM_CONFIG_USERCONFIG": os.devnull, "NPM_CONFIG_GLOBALCONFIG": os.devnull}
+            "NPM_CONFIG_USERCONFIG": str(work / "npm-user.npmrc"),
+            "NPM_CONFIG_GLOBALCONFIG": str(work / "npm-global.npmrc")}
 
 
 def reject_dotenv():
@@ -133,8 +142,9 @@ def validate_dist():
 
 
 def main():
-    if sys.argv[1:] != ["build-and-test"]:
-        print("Usage: bash scripts/buildkite/check.sh build-and-test", file=sys.stderr)
+    package_release.clear(ROOT)
+    if len(sys.argv) != 2 or sys.argv[1] not in ("build-and-test", "build-and-pack"):
+        print("Usage: bash scripts/buildkite/check.sh build-and-test | build-and-pack", file=sys.stderr)
         return 2
     for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
         signal.signal(sig, cancel)
@@ -142,6 +152,7 @@ def main():
     try:
         reject_dotenv()
         clear_dist()
+        frozen = package_release.snapshot(ROOT) if sys.argv[1] == "build-and-pack" else None
         with tempfile.TemporaryDirectory(prefix="caldotcom-janus-") as directory:
             env = environment(Path(directory))
             if not run(["node", "--version"], env, capture=True).startswith("v22.") or (ROOT / ".node-version").read_text().strip() != "22":
@@ -153,24 +164,28 @@ def main():
                             ["bun", "run", "build"], ["bun", "test"]):
                 run(command, env)
             validate_dist()
-            run(["tar", "-czf", str(PARTIAL), "-C", "packages/sdk", "dist"], env)
-            info = PARTIAL.lstat()
-            if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or not 0 < info.st_size <= 64 * 1024 * 1024:
-                raise RuntimeError("SDK archive must be a nonempty regular single-link file within 64 MiB")
-            check_cancelled()
-            PARTIAL.replace(ARCHIVE)
-            check_cancelled()
+            if frozen is not None:
+                package_release.pack(ROOT, frozen, run, env, check_cancelled)
+            else:
+                run(["tar", "-czf", str(PARTIAL), "-C", "packages/sdk", "dist"], env)
+                info = PARTIAL.lstat()
+                if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or not 0 < info.st_size <= 64 * 1024 * 1024:
+                    raise RuntimeError("SDK archive must be a nonempty regular single-link file within 64 MiB")
+                check_cancelled()
+                PARTIAL.replace(ARCHIVE)
+                check_cancelled()
     except Cancelled:
         status = 128 + cancel_signal
     except subprocess.CalledProcessError as error:
         status = error.returncode if error.returncode >= 0 else 128 - error.returncode
-    except (OSError, RuntimeError, subprocess.TimeoutExpired) as error:
+    except (OSError, ValueError, RuntimeError, subprocess.TimeoutExpired, tarfile.TarError, zlib.error, EOFError) as error:
         print(str(error), file=sys.stderr)
         status = 1
     finally:
         PARTIAL.unlink(missing_ok=True)
         if status or cancel_signal:
             ARCHIVE.unlink(missing_ok=True)
+            package_release.clear(ROOT)
     return 128 + cancel_signal if cancel_signal else status
 
 

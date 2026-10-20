@@ -19,6 +19,7 @@ function fixture(options: Record<string, string> = {}) {
   mkdirSync(bin);
   mkdirSync(temporary);
   copyFileSync(new URL("./check.sh", import.meta.url), join(scripts, "check.sh"));
+  copyFileSync(new URL("./package_release.py", import.meta.url), join(scripts, "package_release.py"));
   writeFileSync(join(root, ".node-version"), "22\n");
   writeFileSync(join(root, "outside"), "preserved outside data");
   for (const name of ["sdk-dist.tar.gz", "sdk-dist.tar.gz.tmp"]) {
