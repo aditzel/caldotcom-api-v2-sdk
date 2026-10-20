@@ -4,6 +4,8 @@ dist/
 build/
 sdk-dist.tar.gz
 sdk-dist.tar.gz.tmp
+npm-release/
+npm-release.tmp/
 
 # Environment
 .env
