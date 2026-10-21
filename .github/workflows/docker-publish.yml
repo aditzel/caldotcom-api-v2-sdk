@@ -54,6 +54,8 @@ jobs:
           ACTION = 'docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051'
           IMAGE = 'aditzel/caldotcom-mcp-server'
           LIMIT = 65536
+          # Accommodate GitHub's documented 25 MB webhook cap, independently of plan size.
+          EVENT_LIMIT = 25 * 1024 * 1024
 
 
           def require(value):
@@ -131,7 +133,7 @@ jobs:
           def main():
               require(len(sys.argv) == 1)
               with open(os.environ['GITHUB_EVENT_PATH'], 'rb') as stream:
-                  event = decode(stream.read(1024*1024+1), 1024*1024)
+                  event = decode(stream.read(EVENT_LIMIT+1), EVENT_LIMIT)
               raw = make_plan(os.environ, event, decode(os.environ['JANUS_CAL_DOCKER_METADATA']))
               target = Path(os.environ['RUNNER_TEMP'])/'docker-metadata.json'
               require(target.is_absolute())
@@ -173,7 +175,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           repository: MiraiForge/devops
-          ref: fdeb54440011d4c385e82ef45d5c201f0d174705
+          ref: 2f602a72d6b62b14a70eaef5710de87cc7960b85
           token: ${{ secrets.JANUS_HELPERS_READ_TOKEN }}
           path: .janus-tools
           persist-credentials: false

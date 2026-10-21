@@ -8,7 +8,7 @@ manual publication trigger or concurrency cancellation rule.
 
 GitHub computes and uploads a small metadata plan without checking out repository
 code. Its second job calls the reviewed coordinator from
-`MiraiForge/devops@fdeb54440011d4c385e82ef45d5c201f0d174705`. The coordinator dispatches
+`MiraiForge/devops@2f602a72d6b62b14a70eaef5710de87cc7960b85`. The coordinator dispatches
 the fixed `caldotcom-api-v2-sdk-docker` producer and then the
 `caldotcom-api-v2-sdk-docker-publish` publisher in `mirai-forge`. Image building and
 Docker Hub publication happen on Janus. GitHub receives no Docker Hub credentials
@@ -20,7 +20,7 @@ protected completion export before succeeding. An uncertain build-create respons
 is reconciled through reads, without another POST. A missing export remains
 pending; a transport, identity or policy mismatch fails. Cancellation and a newer
 attempt invalidate the old authority. See the reviewed
-[native publisher runbook](https://github.com/MiraiForge/devops/blob/fdeb54440011d4c385e82ef45d5c201f0d174705/runbooks/buildkite-cal-docker.md)
+[native publisher runbook](https://github.com/MiraiForge/devops/blob/2f602a72d6b62b14a70eaef5710de87cc7960b85/runbooks/buildkite-cal-docker.md)
 for installation, recovery and rollback.
 
 ## Required repository configuration
