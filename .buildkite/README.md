@@ -77,8 +77,11 @@ lookup or publication occurs. The existing publisher's unused manual `version`
 input remains unused; this command accepts no version override.
 
 The tarball is inspected without extracting it. It must contain the tested ESM,
-CJS, legacy JS and declaration entry points and README; every included member
-must match the corresponding SDK file. Duplicate paths, traversal, links,
+CJS, legacy JS and declaration entry points, README and the declared LICENSE;
+every included member must match the corresponding SDK file. The workspace
+license carries the existing repository license into the npm package. A missing
+license is rejected even if it is absent from both the workspace and archive.
+Duplicate paths, traversal, links,
 unexpected package members, writable archive modes, oversized archives and
 metadata mismatches fail the job. The compressed limit is 64 MiB, expanded limit
 128 MiB and entry limit 4096. The output directory is renamed atomically only
