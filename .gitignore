@@ -8,6 +8,7 @@ sdk-dist.tar.gz.tmp
 # Environment
 .env
 .env.*
+!.env.example
 *.log
 
 # OS/editor
@@ -16,6 +17,12 @@ coverage/
 .vscode/
 .idea/
 *.tsbuildinfo
+
+# Foreign JavaScript lockfiles (bun.lock is the committed lockfile)
+package-lock.json
+npm-shrinkwrap.json
+yarn.lock
+pnpm-lock.yaml
 
 # Bun
 # Intentionally keep bun.lockb and .bun/ tracked (Bun best practice)
