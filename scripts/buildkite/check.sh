@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
+if [[ $# -eq 1 && $1 == build-and-test ]]; then
+    # Temporary commissioning branch only. Never merge this probe into main.
+    exec python3 -I -B scripts/buildkite/manual_deadline_probe.py "$@"
+fi
 # Clear outputs before interpreter startup or any validation can fail.
 rm -f -- sdk-dist.tar.gz sdk-dist.tar.gz.tmp
 exec python3 -I -B - "$@" <<'PY'
