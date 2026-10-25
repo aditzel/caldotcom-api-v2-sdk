@@ -10,7 +10,8 @@ The install, lint, build and test commands, Node 22, Bun 1.3.0 and effective
 GitHub's `CI / build-and-test` job runs only for fork PRs or an explicit Actions
 dispatch. A skipped hosted job on a same-repository PR is not a successful Janus
 build: check the Buildkite status and linked build for the exact head commit.
-The Buildkite pipeline publishes separate branch and PR status contexts. Keep
+The Buildkite PR status is `buildkite/caldotcom-api-v2-sdk-ci/pr`; branch builds
+use `buildkite/caldotcom-api-v2-sdk-ci`. Keep
 fork acceptance on its hosted check rather than requiring a Buildkite status
 that fork PRs cannot produce. This cutover adds no branch protection rule.
 
@@ -29,8 +30,10 @@ workflow's existing concurrency behavior.
 ## Artifacts and manual runs
 
 On success, download `sdk-dist.tar.gz` from the Buildkite job's artifacts. It
-contains the SDK `dist/` directory; validate the guarded artifact index's digest
-before consuming it. Failed or canceled jobs do not publish an SDK tarball.
+contains the SDK `dist/` directory. Select the successful build whose commit and
+GitHub status match the intended source, and verify the downloaded artifact
+against Buildkite's recorded checksum. Failed or canceled jobs do not publish
+an SDK tarball.
 This archive is CI output, not permission to publish a package or image.
 
 Use [Cal manual CI](https://buildkite.com/mirai-forge/caldotcom-api-v2-sdk-manual-ci)
