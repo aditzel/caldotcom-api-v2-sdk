@@ -1,8 +1,6 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -10,10 +8,15 @@ on:
 permissions:
   contents: read
 
-# Keep automatic checks until the protected Janus pipelines are commissioned.
+# Main pushes and same-repository PRs run on Buildkite's protected Janus pipeline.
+# Hosted CI remains available for fork PRs and explicit rollback dispatches.
 # Review fork workflow changes before approving: routing is not a runner access boundary.
 jobs:
   build-and-test:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name != github.repository)
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository

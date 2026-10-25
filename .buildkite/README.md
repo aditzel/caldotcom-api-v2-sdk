@@ -1,10 +1,11 @@
-# Protected Janus SDK CI preparation
+# Protected Janus SDK CI
 
-This is additive ordinary CI preparation. Automatic main pushes, pull requests
-against main and manual dispatch use read-only hosted Ubuntu while native
-commissioning completes; the retired self-hosted Actions labels leave jobs queued.
-Checkout does not persist credentials. Keep automatic Actions until the native
-pipeline has been commissioned and verified.
+Main pushes and same-repository pull requests against main run on the protected
+`caldotcom-api-v2-sdk-ci` Buildkite pipeline. Fork pull requests retain read-only
+hosted Ubuntu CI. Routine manual runs use `caldotcom-api-v2-sdk-manual-ci` in
+Buildkite; Actions dispatch remains an explicit hosted rollback path. Checkout
+does not persist credentials. See [CI operations](ci-operations.md) for status
+contexts, artifacts and rollback.
 
 The reference pipeline calls `janus-ci bootstrap` on queue `janus-linux`. The
 protected image-owned `caldotcom-api-v2-sdk-ci` policy must select job
@@ -45,11 +46,12 @@ cancellation proof.
 
 ## Commissioning and publishing boundaries
 
-Before native cutover, verify exact PR/main source identity, statuses, hosted fork
-isolation and manual fallback, plus SDK archive upload/download hashes and
-failure/cancellation behavior. The repository tarball replaces Actions' directory
-artifact only after those native handoff checks pass. Historical local test
-counts are not current provider evidence.
+When changing runner admission, recheck exact PR/main source identity, statuses,
+hosted fork isolation and manual fallback, plus SDK archive upload/download
+hashes and failure/cancellation behavior. Buildkite publishes the SDK tarball;
+the hosted fallback retains Actions' directory artifact. Historical local test
+counts are not current provider evidence. See [CI operations](ci-operations.md)
+for the cutover and rollback contract.
 
 `publish.yml`, `docker-publish.yml` and `junie.yml` remain byte-for-byte unchanged.
 They do not consume this CI workflow or its artifact. This six-file preparation
