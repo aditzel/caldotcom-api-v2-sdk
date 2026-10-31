@@ -1,6 +1,6 @@
 name: Publish Docker Image
 
-"on":
+on:
   push:
     branches:
       - main
@@ -11,302 +11,38 @@ name: Publish Docker Image
   release:
     types: [published]
 
-permissions: {}
-
 jobs:
-  # Merge only after the native commissioning gates in docs/ci/buildkite-docker.md.
-  plan-docker:
-    name: Plan Docker image
-    if: github.repository == 'aditzel/caldotcom-api-v2-sdk'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 360
+  push_to_registry:
+    name: Push Docker image to Docker Hub
+    runs-on: [self-hosted, Linux, X64]
     permissions:
+      packages: write
       contents: read
-    outputs:
-      artifact-id: ${{ steps.plan.outputs.artifact-id }}
     steps:
-      - name: Compute image metadata
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
+        uses: docker/metadata-action@v5
         with:
           images: aditzel/caldotcom-mcp-server
           tags: |
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
             type=semver,pattern={{version}}
             type=sha,format=long
-      - name: Write image plan
-        env:
-          JANUS_CAL_DOCKER_METADATA: ${{ steps.meta.outputs.json }}
-        run: |
-          python3 -I -B -S - <<'PYTHON'
-          #!/usr/bin/env python3
-          """Stdlib-only planner body, embedded in the reviewed workflow without checkout."""
-          import datetime as dt
-          import json
-          import os
-          from pathlib import Path
-          import re
-          import sys
 
-          REPOSITORY = 'aditzel/caldotcom-api-v2-sdk'
-          REPOSITORY_ID = 1075098118
-          WORKFLOW_PATH = '.github/workflows/docker-publish.yml'
-          ACTION = 'docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051'
-          IMAGE = 'aditzel/caldotcom-mcp-server'
-          LIMIT = 65536
-          # Accommodate GitHub's documented 25 MB webhook cap, independently of plan size.
-          EVENT_LIMIT = 25 * 1024 * 1024
-
-
-          def require(value):
-              if not value:
-                  raise ValueError('Invalid Cal Docker metadata plan')
-
-
-          def decode(raw, limit=LIMIT):
-              require(isinstance(raw, (str, bytes)) and 0 < len(raw) <= limit)
-              def unique(pairs):
-                  value = {}
-                  for key, item in pairs:
-                      require(key not in value)
-                      value[key] = item
-                  return value
-              def invalid(_):
-                  raise ValueError('Invalid Cal Docker metadata JSON')
-              return json.loads(raw, object_pairs_hook=unique, parse_constant=invalid)
-
-
-          def make_plan(env, event, metadata):
-              require(env.get('GITHUB_ACTIONS') == 'true' and env.get('RUNNER_ENVIRONMENT') == 'github-hosted'
-                      and env.get('RUNNER_OS') == 'Linux' and env.get('GITHUB_JOB') == 'plan-docker'
-                      and env.get('GITHUB_REPOSITORY') == REPOSITORY
-                      and env.get('GITHUB_REPOSITORY_ID') == str(REPOSITORY_ID))
-              for key in ('GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT'):
-                  require(isinstance(env.get(key), str) and re.fullmatch('[1-9][0-9]{0,14}', env[key])
-                          and int(env[key]) < 2**53)
-              require(int(env['GITHUB_RUN_ATTEMPT']) <= 999999)
-              sha, ref, kind = (env.get(k) for k in ('GITHUB_SHA', 'GITHUB_REF', 'GITHUB_EVENT_NAME'))
-              require(isinstance(sha, str) and re.fullmatch('[0-9a-f]{40}', sha) and sha != '0'*40
-                      and env.get('GITHUB_WORKFLOW_SHA') == sha
-                      and env.get('GITHUB_WORKFLOW_REF') == REPOSITORY+'/'+WORKFLOW_PATH+'@'+str(ref))
-              require(isinstance(event, dict) and isinstance(event.get('repository'), dict)
-                      and type(event['repository'].get('id')) is int and event['repository']['id'] == REPOSITORY_ID
-                      and event['repository'].get('full_name') == REPOSITORY)
-              release = None
-              if kind == 'push':
-                  require(ref == 'refs/heads/main' and event.get('ref') == ref and event.get('after') == sha
-                          and event.get('deleted') is False)
-              else:
-                  require(kind == 'release' and isinstance(ref, str) and ref.startswith('refs/tags/')
-                          and event.get('action') == 'published')
-                  value = event.get('release')
-                  require(isinstance(value, dict) and type(value.get('id')) is int and 0 < value['id'] < 2**53
-                          and value.get('tag_name') == ref[len('refs/tags/'):]
-                          and value.get('draft') is False and type(value.get('prerelease')) is bool)
-                  published = value.get('published_at')
-                  require(isinstance(published, str) and len(published) <= 40
-                          and dt.datetime.fromisoformat(published.replace('Z', '+00:00')).utcoffset() == dt.timedelta(0))
-                  release = {'id': value['id'], 'tagName': value['tag_name'], 'draft': False,
-                             'prerelease': value['prerelease'], 'publishedAt': published, 'action': 'published'}
-              require(isinstance(metadata, dict))
-              tags, labels = metadata.get('tags'), metadata.get('labels')
-              require(isinstance(tags, list) and 1 <= len(tags) <= 3
-                      and all(isinstance(t, str) and re.fullmatch(re.escape(IMAGE)+r':[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}', t) for t in tags)
-                      and len(set(tags)) == len(tags) and IMAGE+':sha-'+sha in tags)
-              if kind == 'push':
-                  require(tags == [IMAGE+':latest', IMAGE+':sha-'+sha])
-              prefix = 'org.opencontainers.image.'
-              require(isinstance(labels, dict) and set(labels) == {prefix+k for k in
-                      ('title', 'description', 'url', 'source', 'version', 'created', 'revision', 'licenses')}
-                      and all(isinstance(v, str) and len(v) <= 16384 and '\0' not in v for v in labels.values())
-                      and labels[prefix+'revision'] == sha and labels[prefix+'version'] == tags[0].split(':', 1)[1])
-              # Keep metadata-action's ordering and semver/latest decisions unchanged.
-              plan = {'schemaVersion': 1, 'repository': REPOSITORY, 'sourceCommit': sha, 'ref': ref, 'event': kind,
-                      'producer': {'runId': env['GITHUB_RUN_ID'], 'runAttempt': env['GITHUB_RUN_ATTEMPT'],
-                                   'workflowRef': env['GITHUB_WORKFLOW_REF'], 'workflowSha': sha},
-                      'release': release, 'metadataAction': ACTION, 'tags': tags, 'labels': labels}
-              raw = json.dumps(plan, sort_keys=True, separators=(',', ':'), allow_nan=False).encode()
-              require(len(raw) <= LIMIT)
-              return raw
-
-
-          def main():
-              require(len(sys.argv) == 1)
-              with open(os.environ['GITHUB_EVENT_PATH'], 'rb') as stream:
-                  event = decode(stream.read(EVENT_LIMIT+1), EVENT_LIMIT)
-              raw = make_plan(os.environ, event, decode(os.environ['JANUS_CAL_DOCKER_METADATA']))
-              target = Path(os.environ['RUNNER_TEMP'])/'docker-metadata.json'
-              require(target.is_absolute())
-              fd = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
-              with os.fdopen(fd, 'wb') as stream:
-                  stream.write(raw)
-                  stream.flush()
-                  os.fsync(stream.fileno())
-
-
-          if __name__ == '__main__':
-              try:
-                  main()
-              except (ValueError, OSError, KeyError, TypeError):
-                  print('Cal Docker metadata plan failed', file=sys.stderr)
-                  sys.exit(1)
-          PYTHON
-      - name: Upload image plan
-        id: plan
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
         with:
-          name: cal-docker-metadata-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/docker-metadata.json
-          if-no-files-found: error
-          overwrite: false
-
-  publish-janus:
-    name: Publish Docker image on Janus
-    needs: plan-docker
-    if: github.repository == 'aditzel/caldotcom-api-v2-sdk'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 360
-    permissions:
-      contents: read
-      actions: read
-      id-token: write
-    steps:
-      - name: Checkout reviewed Docker helpers
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-        with:
-          repository: MiraiForge/devops
-          ref: 2f602a72d6b62b14a70eaef5710de87cc7960b85
-          token: ${{ secrets.JANUS_HELPERS_READ_TOKEN }}
-          path: .janus-tools
-          persist-credentials: false
-      - name: Connect to the completion reader network
-        uses: tailscale/github-action@d1b6cd204f8dceda5b3eaad7f1f767be390056cd # v4
-        with:
-          oauth-client-id: ${{ github.event_name == 'push' && vars.JANUS_CAL_TAILSCALE_MAIN_CLIENT_ID || vars.JANUS_CAL_TAILSCALE_RELEASE_CLIENT_ID }}
-          audience: ${{ github.event_name == 'push' && vars.JANUS_CAL_TAILSCALE_MAIN_AUDIENCE || vars.JANUS_CAL_TAILSCALE_RELEASE_AUDIENCE }}
-          tags: tag:janus-cal-coordinator
-          version: 1.104.2
-          sha256sum: 512f613ed7d04fc7282f7dc5bd76aa105aae28168fbb9357eb749ebcbc29f0ae
-          use-cache: 'false'
-          log-mode: quiet
-      - name: Prepare completion reader credentials
-        env:
-          READER_HOST: ${{ vars.JANUS_CAL_COMPLETION_HOST }}
-          READER_PORT: ${{ vars.JANUS_CAL_COMPLETION_PORT }}
-          READER_KEY: ${{ secrets.JANUS_CAL_COMPLETION_SSH_KEY }}
-          READER_KNOWN_HOSTS: ${{ vars.JANUS_CAL_COMPLETION_KNOWN_HOSTS }}
-        run: |
-          python3 -I -B -S - <<'PYTHON'
-          import importlib.util
-          import json
-          import os
-          from pathlib import Path
-          import re
-          import stat
-          import sys
-
-          def main():
-              env = os.environ
-              numbers = [env[k] for k in ('GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT')]
-              if not all(re.fullmatch('[1-9][0-9]{0,14}', n) and int(n) < 2**53 for n in numbers):
-                  raise ValueError('Invalid run identity')
-              parent = Path(env['RUNNER_TEMP'])
-              if not parent.is_absolute() or '..' in parent.parts:
-                  raise ValueError('Invalid temporary directory')
-              for path in (*reversed(parent.parents), parent):
-                  info = path.lstat()
-                  if not stat.S_ISDIR(info.st_mode) or info.st_uid not in (0, os.geteuid()) or info.st_mode & 0o022:
-                      raise ValueError('Unsafe temporary directory')
-              root = parent/('cal-completion-'+'-'.join(numbers))
-              root.mkdir(mode=0o700)
-              paths = {}
-              for name, variable in (('identity', 'READER_KEY'), ('known_hosts', 'READER_KNOWN_HOSTS')):
-                  data = env.pop(variable).encode()
-                  if not 0 < len(data) <= 16384 or b'\0' in data:
-                      raise ValueError('Invalid reader credential')
-                  path = root/name
-                  fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
-                  with os.fdopen(fd, 'wb') as stream:
-                      stream.write(data)
-                      stream.flush()
-                      os.fsync(stream.fileno())
-                  paths[name] = str(path)
-              config = {'host': env['READER_HOST'], 'port': int(env['READER_PORT']),
-                        'identityFile': paths['identity'], 'knownHostsFile': paths['known_hosts']}
-              spec = importlib.util.spec_from_file_location('completion',
-                  '.janus-tools/infrastructure/buildkite-publishers/cal-completion.py')
-              client = importlib.util.module_from_spec(spec)
-              spec.loader.exec_module(client)
-              client.arguments(config, 'a'*64)
-              with open(env['GITHUB_ENV'], 'a', encoding='utf-8') as stream:
-                  stream.write('JANUS_CAL_COMPLETION_READER='+json.dumps(config, separators=(',', ':'))+'\n')
-
-          try:
-              main()
-          except (ValueError, OSError, KeyError, TypeError):
-              print('Cal completion reader setup failed', file=sys.stderr)
-              sys.exit(1)
-          PYTHON
-      - name: Verify read-only completion access before dispatch
-        run: |
-          python3 -I -B -S - <<'PYTHON'
-          import hashlib
-          import importlib.util
-          import json
-          import os
-          import sys
-          import time
-
-          try:
-              spec = importlib.util.spec_from_file_location('completion',
-                  '.janus-tools/infrastructure/buildkite-publishers/cal-completion.py')
-              client = importlib.util.module_from_spec(spec)
-              spec.loader.exec_module(client)
-              config = json.loads(os.environ['JANUS_CAL_COMPLETION_READER'])
-              probe = hashlib.sha256(('cal-completion-probe:'+os.environ['GITHUB_RUN_ID']+':'+
-                                     os.environ['GITHUB_RUN_ATTEMPT']).encode()).hexdigest()
-              client.fetch(config, probe, time.monotonic()+20)
-          except (ValueError, OSError, KeyError, TypeError):
-              print('Cal completion reader preflight failed; no build dispatched', file=sys.stderr)
-              sys.exit(1)
-          PYTHON
-      - name: Coordinate native Docker build and publication
-        id: publication
-        env:
-          JANUS_CAL_DOCKER_ARTIFACT_ID: ${{ needs.plan-docker.outputs.artifact-id }}
-          JANUS_CAL_DOCKER_WORKFLOW_BLOB: ${{ vars.JANUS_CAL_DOCKER_WORKFLOW_BLOB }}
-          JANUS_CAL_PUBLISHER_POLICY_SHA256: ${{ vars.JANUS_CAL_PUBLISHER_POLICY_SHA256 }}
-          JANUS_GITHUB_READ_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          JANUS_BUILDKITE_READ_TOKEN: ${{ secrets.BUILDKITE_CAL_DOCKER_READ_TOKEN }}
-          JANUS_BUILDKITE_CREATE_TOKEN: ${{ secrets.BUILDKITE_CAL_DOCKER_CREATE_TOKEN }}
-        run: python3 -I -B .janus-tools/infrastructure/buildkite-publishers/cal-docker-workflow.py
-      - name: Remove completion reader credentials
-        if: always()
-        run: |
-          python3 -I -B -S - <<'PYTHON'
-          import os
-          from pathlib import Path
-          import re
-          import shutil
-          import stat
-
-          numbers = [os.environ[k] for k in ('GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT')]
-          if not all(re.fullmatch('[1-9][0-9]{0,14}', n) and int(n) < 2**53 for n in numbers):
-              raise ValueError('Invalid run identity')
-          parent = Path(os.environ['RUNNER_TEMP'])
-          if not parent.is_absolute() or '..' in parent.parts:
-              raise ValueError('Invalid temporary directory')
-          for path in (*reversed(parent.parents), parent):
-              info = path.lstat()
-              if not stat.S_ISDIR(info.st_mode) or info.st_uid not in (0, os.geteuid()) or info.st_mode & 0o022:
-                  raise ValueError('Unsafe temporary directory')
-          root = parent/('cal-completion-'+'-'.join(numbers))
-          try:
-              info = root.lstat()
-          except FileNotFoundError:
-              pass
-          else:
-              if not stat.S_ISDIR(info.st_mode) or info.st_uid != os.geteuid() or stat.S_IMODE(info.st_mode) != 0o700:
-                  raise ValueError('Unsafe reader credential directory')
-              shutil.rmtree(root)
-          PYTHON
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
