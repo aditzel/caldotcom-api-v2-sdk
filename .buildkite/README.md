@@ -116,7 +116,7 @@ Migration testing does not authorize publishing a real package or tag.
 
 `Prepare Janus package` runs on ephemeral `ubuntu-24.04` with read-only GitHub
 permissions. It checks out only the complete reviewed helper repository at
-`3d8189d9c7899882fd19542ead8874d941f8bdce`, authenticates its current source/run/job,
+`3ff6ff730c9607546551e11f9ae271ce0235487a`, authenticates its current source/run/job,
 and makes one exact-source API build request to `caldotcom-api-v2-sdk-release`.
 A private intent prevents automatic retry of uncertain writes within the same
 job/attempt. Full workflow reruns use their own coordinator and request; the
