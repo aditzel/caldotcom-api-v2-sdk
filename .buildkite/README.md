@@ -56,11 +56,11 @@ for the cutover and rollback contract.
 
 `docker-publish.yml` and `junie.yml` remain byte-for-byte unchanged. The npm
 publisher has the separately gated integration described below.
-They do not consume this CI workflow or its artifact. This preparation
+The Docker and Junie workflows do not consume this CI workflow or its artifact. This preparation
 changes no package, SDK/MCP application path or Dockerfile, so it does not match
-the Docker publisher's main-push path filters. npm provenance, release publishing
-and managed Junie replacement need their separate integrations; this preparation triggers
-no release or deployment.
+the Docker publisher's main-push path filters. The npm provenance and release
+integration still requires native commissioning before activation; managed Junie
+replacement remains separate. This preparation triggers no release or deployment.
 
 ## npm artifact preparation
 
