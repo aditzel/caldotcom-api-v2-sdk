@@ -25,6 +25,7 @@ process supervision; repository commands do not download a runtime or run as roo
 Each execution uses temporary HOME, XDG configuration/data/cache/state, Bun/npm
 caches and TMPDIR. Child processes receive an allowlisted environment, without
 inherited credentials, runtime injection options or caller npm configuration.
+User and global npm configuration use separate empty temporary files.
 Runtime dotenv files in the root and workspaces are rejected before dependency
 installation; tracked examples remain permitted.
 
@@ -54,8 +55,43 @@ counts are not current provider evidence. See [CI operations](ci-operations.md)
 for the cutover and rollback contract.
 
 `publish.yml`, `docker-publish.yml` and `junie.yml` remain byte-for-byte unchanged.
-They do not consume this CI workflow or its artifact. This six-file preparation
+They do not consume this CI workflow or its artifact. This preparation
 changes no package, SDK/MCP application path or Dockerfile, so it does not match
 the Docker publisher's main-push path filters. npm provenance, release publishing
-and managed Junie replacement remain separate phases; this preparation triggers
+and managed Junie replacement need their separate integrations; this preparation triggers
 no release or deployment.
+
+## npm artifact preparation
+
+`bash scripts/buildkite/check.sh build-and-pack` runs the same install, lint,
+build and `bun test` stages, then packs the SDK workspace with npm offline.
+It uses the existing Node 22 / Bun 1.3.0 toolchain. It creates
+`npm-release/package.tgz` and `npm-release/manifest.json` instead of the ordinary
+`sdk-dist.tar.gz`; neither path is admitted to the active pipeline yet.
+
+Packing runs with lifecycle scripts and workspace expansion disabled. Project
+`.npmrc` files or npm release lifecycle hooks require a reviewed contract before
+the job will run. The root/workspace package metadata and `bun.lock` must remain
+byte-for-byte unchanged across build, tests and packing. The package name remains
+the unscoped `caldotcom-api-v2-sdk`; no version bump, tag creation, registry
+lookup or publication occurs. The existing publisher's unused manual `version`
+input remains unused; this command accepts no version override.
+
+The tarball is inspected without extracting it. It must contain the tested ESM,
+CJS, legacy JS and declaration entry points and README; every included member
+must match the corresponding SDK file. Duplicate paths, traversal, links,
+unexpected package members, writable archive modes, oversized archives and
+metadata mismatches fail the job. The compressed limit is 64 MiB, expanded limit
+128 MiB and entry limit 4096. The output directory is renamed atomically only
+after validation. Failure or handled cancellation removes final and partial
+release output; repeated runs remove stale output before validating arguments.
+
+The manifest records the package identity, tarball size, SHA-256, SHA-512
+integrity and hashes of the four source metadata files. It is repository-produced
+data, not permission to publish. Protected producer admission, an independently
+validated source/job/policy envelope, authenticated artifact consumption and
+the minimal GitHub-hosted npm publisher remain commissioning gates. Native tag
+and manual-dispatch semantics, the original total 360-minute job budget,
+failure/cancellation/retry behavior, npm trusted-publisher configuration and
+provenance all need verification before changing `publish.yml`. Docker Hub
+publishing needs its isolated builder and remains separately tracked.
