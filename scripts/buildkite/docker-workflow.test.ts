@@ -19,7 +19,7 @@ const repository = "aditzel/caldotcom-api-v2-sdk";
 const image = "aditzel/caldotcom-mcp-server";
 const sha = "a".repeat(40);
 const prefix = "org.opencontainers.image.";
-const helper = "2f602a72d6b62b14a70eaef5710de87cc7960b85";
+const helper = "5bba3156e1ffeddbe045f783bf208a7fb762072d";
 const metadataAction = "docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051";
 
 function embedded(step: any): string {
