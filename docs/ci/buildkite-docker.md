@@ -25,7 +25,7 @@ and ordering; even a third skipped legacy job violates its admission contract.
 
 GitHub computes and uploads a small metadata plan without checking out repository
 code. Its second job calls the reviewed coordinator from
-`MiraiForge/devops@2f602a72d6b62b14a70eaef5710de87cc7960b85`. The coordinator dispatches
+`MiraiForge/devops@5bba3156e1ffeddbe045f783bf208a7fb762072d`. The coordinator dispatches
 the fixed `caldotcom-api-v2-sdk-docker` producer and then the
 `caldotcom-api-v2-sdk-docker-publish` publisher in `mirai-forge`. Image building and
 Docker Hub publication happen on Janus. In this future coordinator, GitHub receives
@@ -38,7 +38,7 @@ protected completion export before succeeding. An uncertain build-create respons
 is reconciled through reads, without another POST. A missing export remains
 pending; a transport, identity or policy mismatch fails. Cancellation and a newer
 attempt invalidate the old authority. See the reviewed
-[native publisher runbook](https://github.com/MiraiForge/devops/blob/2f602a72d6b62b14a70eaef5710de87cc7960b85/runbooks/buildkite-cal-docker.md)
+[native publisher runbook](https://github.com/MiraiForge/devops/blob/5bba3156e1ffeddbe045f783bf208a7fb762072d/runbooks/buildkite-cal-docker.md)
 for installation, recovery and rollback.
 
 ## Required before activation: repository configuration
@@ -94,12 +94,18 @@ policy exceptions in this Docker workflow.
    coordinator dispatch evidence; cleanup removes only the reader credential directory.
 5. Reconcile and validate the **final workflow blob, policy and helper/runtime pin
    closure** together, including installed source bundles and both fixed pipeline
-   definitions. The retained `2f602a72d6b62b14a70eaef5710de87cc7960b85` helper pin is a
-   historical candidate, not an approved current runtime. Later upstream fixes
-   include archive extraction hardening, registry temporary-file race handling,
-   controller/cancellation cleanup and journal capacity/retention gates. Compare
-   and validate that complete closure before selecting new pins; do not silently
-   adopt a newer helper or claim the old closure is commissioned. Complete native
+   definitions. The candidate helper ref is
+   `5bba3156e1ffeddbe045f783bf208a7fb762072d` (DevOps main verified 2026-10-31).
+   It replaces historical helper `2f602a72d6b62b14a70eaef5710de87cc7960b85` and
+   includes the landed archive, registry temporary-file, cleanup and journal
+   capacity/retention corrections. The embedded planner is unchanged. Source
+   selection does not approve any historical image or installed policy: prepare
+   the producer with the final workflow blob, seal its actual runtime policy,
+   embed that exact policy in the consumer/publisher, and bind the publisher's
+   canonical policy digest to `JANUS_CAL_PUBLISHER_POLICY_SHA256`. Verify the
+   complete installed source manifests and binary fingerprints, publisher-agent
+   image and host bundle. Never substitute source hashes or fixture identities
+   for runtime fingerprints or native provider evidence. Complete native
    positive, negative, retry/cancellation and recovery checks from the runbook. Record the
    resulting provider/job identities and protected proof. Local tests and ordinary
    GitHub PR checks do not satisfy these gates. Do not create a package, release,
