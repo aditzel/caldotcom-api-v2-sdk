@@ -56,11 +56,15 @@ for the cutover and rollback contract.
 
 `docker-publish.yml` and `junie.yml` remain byte-for-byte unchanged. The npm
 publisher has the separately gated integration described below.
-The Docker and Junie workflows do not consume this CI workflow or its artifact. This preparation
-changes no package, SDK/MCP application path or Dockerfile, so it does not match
-the Docker publisher's main-push path filters. The npm provenance and release
-integration still requires native commissioning before activation; managed Junie
-replacement remains separate. This preparation triggers no release or deployment.
+The Docker and Junie workflows do not consume this CI workflow or its artifact.
+The SDK LICENSE addition matches the Docker publisher's `packages/sdk/**`
+main-push filter, so an ordinary merge can publish an image. For source-only
+landing, first complete PR checks and review, then include `[skip actions]`
+only in the final merge commit message to suppress that push's hosted workflows.
+This also skips other Actions checks on that push; verify any main-push Buildkite
+result independently. Future workflow triggers remain enabled. The npm provenance
+and release integration still requires native commissioning before activation;
+managed Junie replacement remains separate.
 
 ## npm artifact preparation
 
