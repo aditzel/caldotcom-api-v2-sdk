@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 const workflow = Bun.YAML.parse(readFileSync(
   new URL("../../.github/workflows/publish.yml", import.meta.url), "utf8",
 )) as any;
-const helper = "3d8189d9c7899882fd19542ead8874d941f8bdce";
+const helper = "3ff6ff730c9607546551e11f9ae271ce0235487a";
 const repository = "aditzel/caldotcom-api-v2-sdk";
 const prepare = workflow.jobs["prepare-janus"];
 const publish = workflow.jobs.publish;

@@ -1,10 +1,11 @@
-# Protected Janus SDK CI preparation
+# Protected Janus SDK CI
 
-This is additive ordinary CI preparation. Automatic main pushes, pull requests
-against main and manual dispatch use read-only hosted Ubuntu while native
-commissioning completes; the retired self-hosted Actions labels leave jobs queued.
-Checkout does not persist credentials. Keep automatic Actions until the native
-pipeline has been commissioned and verified.
+Main pushes and same-repository pull requests against main run on the protected
+`caldotcom-api-v2-sdk-ci` Buildkite pipeline. Fork pull requests retain read-only
+hosted Ubuntu CI. Routine manual runs use `caldotcom-api-v2-sdk-manual-ci` in
+Buildkite; Actions dispatch remains an explicit hosted rollback path. Checkout
+does not persist credentials. See [CI operations](ci-operations.md) for status
+contexts, artifacts and rollback.
 
 The reference pipeline calls `janus-ci bootstrap` on queue `janus-linux`. The
 protected image-owned `caldotcom-api-v2-sdk-ci` policy must select job
@@ -46,19 +47,24 @@ cancellation proof.
 
 ## Commissioning and publishing boundaries
 
-Before native cutover, verify exact PR/main source identity, statuses, hosted fork
-isolation and manual fallback, plus SDK archive upload/download hashes and
-failure/cancellation behavior. The repository tarball replaces Actions' directory
-artifact only after those native handoff checks pass. Historical local test
-counts are not current provider evidence.
+When changing runner admission, recheck exact PR/main source identity, statuses,
+hosted fork isolation and manual fallback, plus SDK archive upload/download
+hashes and failure/cancellation behavior. Buildkite publishes the SDK tarball;
+the hosted fallback retains Actions' directory artifact. Historical local test
+counts are not current provider evidence. See [CI operations](ci-operations.md)
+for the cutover and rollback contract.
 
 `docker-publish.yml` and `junie.yml` remain byte-for-byte unchanged. The npm
 publisher has the separately gated integration described below.
-They do not consume this CI workflow or its artifact. This preparation
-changes no package, SDK/MCP application path or Dockerfile, so it does not match
-the Docker publisher's main-push path filters. npm provenance, release publishing
-and managed Junie replacement need their separate integrations; this preparation triggers
-no release or deployment.
+The Docker and Junie workflows do not consume this CI workflow or its artifact.
+The SDK LICENSE addition matches the Docker publisher's `packages/sdk/**`
+main-push filter, so an ordinary merge can publish an image. For source-only
+landing, first complete PR checks and review, then include `[skip actions]`
+only in the final merge commit message to suppress that push's hosted workflows.
+This also skips other Actions checks on that push; verify any main-push Buildkite
+result independently. Future workflow triggers remain enabled. The npm provenance
+and release integration still requires native commissioning before activation;
+managed Junie replacement remains separate.
 
 ## npm artifact preparation
 
@@ -77,8 +83,11 @@ lookup or publication occurs. The existing publisher's unused manual `version`
 input remains unused; this command accepts no version override.
 
 The tarball is inspected without extracting it. It must contain the tested ESM,
-CJS, legacy JS and declaration entry points and README; every included member
-must match the corresponding SDK file. Duplicate paths, traversal, links,
+CJS, legacy JS and declaration entry points, README and the declared LICENSE;
+every included member must match the corresponding SDK file. The workspace
+license carries the existing repository license into the npm package. A missing
+license is rejected even if it is absent from both the workspace and archive.
+Duplicate paths, traversal, links,
 unexpected package members, writable archive modes, oversized archives and
 metadata mismatches fail the job. The compressed limit is 64 MiB, expanded limit
 128 MiB and entry limit 4096. The output directory is renamed atomically only
@@ -111,7 +120,7 @@ Migration testing does not authorize publishing a real package or tag.
 
 `Prepare Janus package` runs on ephemeral `ubuntu-24.04` with read-only GitHub
 permissions. It checks out only the complete reviewed helper repository at
-`3d8189d9c7899882fd19542ead8874d941f8bdce`, authenticates its current source/run/job,
+`3ff6ff730c9607546551e11f9ae271ce0235487a`, authenticates its current source/run/job,
 and makes one exact-source API build request to `caldotcom-api-v2-sdk-release`.
 A private intent prevents automatic retry of uncertain writes within the same
 job/attempt. Full workflow reruns use their own coordinator and request; the
