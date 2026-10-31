@@ -16,7 +16,7 @@ EXPANDED_LIMIT = 128 * 1024 * 1024
 METADATA = ("package.json", "bun.lock", "packages/sdk/package.json",
             "packages/mcp-server/package.json")
 REQUIRED = {"package/package.json", "package/dist/index.js", "package/dist/index.mjs",
-            "package/dist/index.cjs", "package/dist/index.d.ts", "package/README.md"}
+            "package/dist/index.cjs", "package/dist/index.d.ts", "package/README.md", "package/LICENSE"}
 LIFECYCLE = ("prepublishOnly", "prepack", "prepare", "postpack", "publish", "postpublish")
 
 
@@ -109,11 +109,9 @@ def validate(payload, package, root, guard):
                 require(decode(data) == package, "Packaged metadata differs from frozen source")
             names.add(name)
         require(not any(expanded[archive.offset:]), "Unexpected data after npm archive")
-    require(REQUIRED <= names, "npm archive is missing SDK runtime output")
-    expected = {"package/package.json", "package/README.md"}
+    require(REQUIRED <= names, "npm archive is missing required SDK files")
+    expected = {"package/package.json", "package/README.md", "package/LICENSE"}
     sdk = root / "packages/sdk"
-    if (sdk / "LICENSE").exists() or (sdk / "LICENSE").is_symlink():
-        expected.add("package/LICENSE")
     for path in (sdk / "dist").rglob("*"):
         guard()
         require(not path.is_symlink(), "SDK output cannot contain symlinks")

@@ -22,6 +22,7 @@ p = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(p)
 PACKAGE = {"name": p.NAME, "version": "0.2.0", "files": ["dist", "README.md", "LICENSE"]}
 FILES = {"package.json": json.dumps(PACKAGE).encode(), "README.md": b"SDK documentation",
+         "LICENSE": b"MIT License\nCopyright (c) 2025 Allan Ditzel\n",
          **{"dist/index." + suffix: b"export {};" for suffix in ("js", "mjs", "cjs", "d.ts")}}
 
 
@@ -86,6 +87,11 @@ class PackageTests(unittest.TestCase):
             self.validate(tarball())
         with patch.object(p, "EXPANDED_LIMIT", 10), self.assertRaises(RuntimeError):
             self.validate(tarball())
+
+    def test_declared_license_is_required_even_when_missing_from_the_workspace(self):
+        (self.root / "packages/sdk/LICENSE").unlink()
+        with self.assertRaisesRegex(RuntimeError, "missing"):
+            self.validate(tarball({"package/LICENSE": None}))
 
     def test_missing_secondary_declarations_are_rejected(self):
         (self.root / "packages/sdk/dist/resource.d.ts").write_text("export {};")
@@ -175,7 +181,7 @@ out=pathlib.Path(sys.argv[sys.argv.index('--pack-destination')+1]);name='caldotc
 b=io.BytesIO()
 with tarfile.open(fileobj=b,mode='w') as a:
  for path in pathlib.Path.cwd().rglob('*'):
-  if path.is_file() and ('dist' in path.parts or path.name in ('package.json','README.md')):
+  if path.is_file() and ('dist' in path.parts or path.name in ('package.json','README.md','LICENSE')):
    data=path.read_bytes();entry=tarfile.TarInfo('package/'+str(path.relative_to(pathlib.Path.cwd())))
    entry.mode=0o644;entry.size=len(data);a.addfile(entry,io.BytesIO(data))
 payload=gzip.compress(b.getvalue());(out/name).write_bytes(payload)
@@ -221,6 +227,8 @@ print(json.dumps([{'filename':name,'name':'caldotcom-api-v2-sdk','version':'0.2.
         self.assertEqual(set(manifest["sourceFiles"]), set(p.METADATA))
         self.assertFalse((self.root / "npm-release.tmp").exists())
         self.assertFalse((self.root / "sdk-dist.tar.gz").exists())
+        with tarfile.open(final / "package.tgz", "r:gz") as archive:
+            self.assertEqual(archive.extractfile("package/LICENSE").read(), FILES["LICENSE"])
 
     def test_failures_remove_stale_and_partial_release_outputs(self):
         for options, expected in (({"fail": "install --frozen-lockfile"}, 23),
