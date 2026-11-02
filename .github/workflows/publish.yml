@@ -21,7 +21,7 @@ jobs:
       github.repository == 'aditzel/caldotcom-api-v2-sdk' &&
       contains(fromJSON('["verify","publish"]'), vars.JANUS_CAL_RELEASE_MODE)
     runs-on: ubuntu-24.04
-    timeout-minutes: 360
+    timeout-minutes: 30
     permissions:
       contents: read
       actions: read
@@ -39,7 +39,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           repository: MiraiForge/devops
-          ref: 3ff6ff730c9607546551e11f9ae271ce0235487a
+          ref: 54ae7e8e87ce60a96e02af7abd5275df5627e114
           token: ${{ secrets.JANUS_HELPERS_READ_TOKEN }}
           path: .janus-tools
           persist-credentials: false
@@ -71,7 +71,7 @@ jobs:
       (needs.prepare-janus.result == 'success' ||
        !contains(fromJSON('["verify","publish"]'), vars.JANUS_CAL_RELEASE_MODE))
     runs-on: ${{ fromJSON(vars.JANUS_CAL_RELEASE_MODE == '' && '["self-hosted","Linux","X64"]' || '["ubuntu-24.04"]') }}
-    timeout-minutes: 360
+    timeout-minutes: 30
     permissions:
       contents: read
       actions: read
@@ -132,7 +132,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           repository: MiraiForge/devops
-          ref: 3ff6ff730c9607546551e11f9ae271ce0235487a
+          ref: 54ae7e8e87ce60a96e02af7abd5275df5627e114
           token: ${{ secrets.JANUS_HELPERS_READ_TOKEN }}
           path: .janus-tools
           persist-credentials: false

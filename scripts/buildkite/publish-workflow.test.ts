@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 const workflow = Bun.YAML.parse(readFileSync(
   new URL("../../.github/workflows/publish.yml", import.meta.url), "utf8",
 )) as any;
-const helper = "3ff6ff730c9607546551e11f9ae271ce0235487a";
+const helper = "54ae7e8e87ce60a96e02af7abd5275df5627e114";
 const repository = "aditzel/caldotcom-api-v2-sdk";
 const prepare = workflow.jobs["prepare-janus"];
 const publish = workflow.jobs.publish;
@@ -120,7 +120,7 @@ describe("original Cal publisher routing", () => {
         repository: "MiraiForge/devops", ref: helper,
         token: "${{ secrets.JANUS_HELPERS_READ_TOKEN }}", path: ".janus-tools", "persist-credentials": false,
       });
-      expect(job["timeout-minutes"]).toBe(360);
+      expect(job["timeout-minutes"]).toBe(30);
       const cleanup = job.steps.at(-1);
       expect(cleanup.if).toBe("always() && steps.helpers.outcome == 'success'");
       expect(cleanup.run).toBe("python3 -I -B .janus-tools/infrastructure/buildkite-publishers/cal-workflow.py cleanup");
