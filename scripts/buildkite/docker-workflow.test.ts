@@ -19,7 +19,7 @@ const repository = "aditzel/caldotcom-api-v2-sdk";
 const image = "aditzel/caldotcom-mcp-server";
 const sha = "a".repeat(40);
 const prefix = "org.opencontainers.image.";
-const helper = "5bba3156e1ffeddbe045f783bf208a7fb762072d";
+const helper = "3ba8943fdc61deb75944ebbd9b789be8e85a7ef0";
 const metadataAction = "docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051";
 
 function embedded(step: any): string {
@@ -136,7 +136,7 @@ describe("inactive Docker migration preserves the live publisher", () => {
     expect(coordinator.permissions).toEqual({ contents: "read", actions: "read", "id-token": "write" });
     for (const job of [planner, coordinator]) {
       expect(job["runs-on"]).toBe("ubuntu-24.04");
-      expect(job["timeout-minutes"]).toBe(360);
+      expect(job["timeout-minutes"]).toBe(30);
       expect(job.if).toBe(`github.repository == '${repository}'`);
       for (const step of job.steps.filter((step: any) => step.uses)) expect(step.uses).toMatch(/@[0-9a-f]{40}$/);
     }

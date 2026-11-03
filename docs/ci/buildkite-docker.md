@@ -25,12 +25,12 @@ and ordering; even a third skipped legacy job violates its admission contract.
 
 GitHub computes and uploads a small metadata plan without checking out repository
 code. Its second job calls the reviewed coordinator from
-`MiraiForge/devops@5bba3156e1ffeddbe045f783bf208a7fb762072d`. The coordinator dispatches
+`MiraiForge/devops@3ba8943fdc61deb75944ebbd9b789be8e85a7ef0`. The coordinator dispatches
 the fixed `caldotcom-api-v2-sdk-docker` producer and then the
 `caldotcom-api-v2-sdk-docker-publish` publisher in `mirai-forge`. Image building and
 Docker Hub publication happen on Janus. In this future coordinator, GitHub receives
 no Docker Hub credentials and does not build images; the current active publisher
-retains its existing login. Both stages share the six-hour budget that starts at
+retains its existing login. Both stages share the 30-minute budget that starts at
 the original planner's start time; retries never reset it.
 
 The coordinator checks original GitHub authority, current native jobs and a
@@ -38,7 +38,7 @@ protected completion export before succeeding. An uncertain build-create respons
 is reconciled through reads, without another POST. A missing export remains
 pending; a transport, identity or policy mismatch fails. Cancellation and a newer
 attempt invalidate the old authority. See the reviewed
-[native publisher runbook](https://github.com/MiraiForge/devops/blob/5bba3156e1ffeddbe045f783bf208a7fb762072d/runbooks/buildkite-cal-docker.md)
+[native publisher runbook](https://github.com/MiraiForge/devops/blob/3ba8943fdc61deb75944ebbd9b789be8e85a7ef0/runbooks/buildkite-cal-docker.md)
 for installation, recovery and rollback.
 
 ## Required before activation: repository configuration
@@ -95,11 +95,11 @@ policy exceptions in this Docker workflow.
 5. Reconcile and validate the **final workflow blob, policy and helper/runtime pin
    closure** together, including installed source bundles and both fixed pipeline
    definitions. The candidate helper ref is
-   `5bba3156e1ffeddbe045f783bf208a7fb762072d` (DevOps main verified 2026-10-31).
+   `3ba8943fdc61deb75944ebbd9b789be8e85a7ef0` (DevOps main verified 2026-11-03).
    It replaces historical helper `2f602a72d6b62b14a70eaef5710de87cc7960b85` and
    includes the landed archive, registry temporary-file, cleanup and journal
-   capacity/retention corrections. The embedded planner is unchanged. Source
-   selection does not approve any historical image or installed policy: prepare
+   capacity/retention corrections and practical Docker deadlines. The embedded
+   planner is unchanged. Source selection does not approve any historical image or installed policy: prepare
    the producer with the final workflow blob, seal its actual runtime policy,
    embed that exact policy in the consumer/publisher, and bind the publisher's
    canonical policy digest to `JANUS_CAL_PUBLISHER_POLICY_SHA256`. Verify the
@@ -112,7 +112,8 @@ policy exceptions in this Docker workflow.
    tag or registry image merely to test this migration.
 6. Record protected artifact/storage ownership and permissions, provenance and
    index integrity, policy/blob/digest mismatch rejection, current-run authority,
-   reruns, the original six-hour deadline, cancellation, invalid completion,
+   reruns, the shared 30-minute deadline measured from the original planner's start
+   time without resetting on retries, cancellation, invalid completion,
    uncertain-create GET-only reconciliation and recovery evidence for both fixed
    pipelines. Validate positive and negative cases against the final installed
    closure. Mocked contract tests are not native acceptance evidence.
