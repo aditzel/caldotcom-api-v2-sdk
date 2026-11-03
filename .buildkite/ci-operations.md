@@ -51,5 +51,6 @@ its SDK directory artifact upload, without waiting for Buildkite.
 To restore automatic hosted CI, revert the cutover in `.github/workflows/ci.yml`:
 restore `push.branches: [main]` and remove the job-level routing condition. Confirm
 the hosted PR and main checks before disabling the ordinary Buildkite webhook.
-Do not change the release, Docker publishing or Junie workflows as part of this
-rollback; their migrations and commissioning gates remain separate.
+Do not change the npm release or Junie workflows as part of this rollback;
+their migrations and commissioning gates remain separate. Docker Hub publication
+is retired and must not be restored as part of an ordinary CI rollback.

@@ -54,17 +54,12 @@ the hosted fallback retains Actions' directory artifact. Historical local test
 counts are not current provider evidence. See [CI operations](ci-operations.md)
 for the cutover and rollback contract.
 
-`docker-publish.yml` and `junie.yml` remain byte-for-byte unchanged. The npm
-publisher has the separately gated integration described below.
-The Docker and Junie workflows do not consume this CI workflow or its artifact.
-The SDK LICENSE addition matches the Docker publisher's `packages/sdk/**`
-main-push filter, so an ordinary merge can publish an image. For source-only
-landing, first complete PR checks and review, then include `[skip actions]`
-only in the final merge commit message to suppress that push's hosted workflows.
-This also skips other Actions checks on that push; verify any main-push Buildkite
-result independently. Future workflow triggers remain enabled. The npm provenance
-and release integration still requires native commissioning before activation;
-managed Junie replacement remains separate.
+Docker Hub publication is retired, including its inactive Janus replacement.
+The Dockerfile remains available for local builds; no registry credentials or
+Docker publication acceptance are required for the CI migration. Existing
+published images are not maintained by this repository's workflows.
+`junie.yml` remains unchanged. The npm publisher has the separately gated
+integration described below; managed Junie replacement remains separate.
 
 ## npm artifact preparation
 
@@ -101,8 +96,7 @@ validated source/job/policy envelope, authenticated artifact consumption and
 the minimal GitHub-hosted npm publisher remain commissioning gates. Native tag
 and manual-dispatch semantics, the original total 360-minute job budget,
 failure/cancellation/retry behavior, npm trusted-publisher configuration and
-provenance all need verification before enabling the hosted release modes. Docker Hub
-publishing needs its isolated builder and remains separately tracked.
+provenance all need verification before enabling the hosted release modes.
 
 
 ## Original npm workflow integration
@@ -155,4 +149,4 @@ policy examples and deployed configuration before activation. The immutable
 helper commit must remain reachable through stack delivery. Current examples
 still pin the old workflow and cannot admit this coordinator. Local/isolated
 checks are preparation evidence, not native commissioning or live OIDC proof.
-Keep Docker Hub publishing and managed Junie replacement separately tracked.
+Keep managed Junie replacement separately tracked.
