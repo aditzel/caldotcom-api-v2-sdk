@@ -112,7 +112,8 @@ policy exceptions in this Docker workflow.
    tag or registry image merely to test this migration.
 6. Record protected artifact/storage ownership and permissions, provenance and
    index integrity, policy/blob/digest mismatch rejection, current-run authority,
-   reruns, the original six-hour deadline, cancellation, invalid completion,
+   reruns, the shared 30-minute deadline measured from the original planner's start
+   time without resetting on retries, cancellation, invalid completion,
    uncertain-create GET-only reconciliation and recovery evidence for both fixed
    pipelines. Validate positive and negative cases against the final installed
    closure. Mocked contract tests are not native acceptance evidence.
